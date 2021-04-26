@@ -1,9 +1,9 @@
 @echo off
 
 rem Set values for your Language Understanding app
-set app_id=YOUR_APP_ID
-set endpoint=YOUR_ENDPOINT
-set key=YOUR_KEY
+set app_id=128b772e-7605-4671-bfa6-e1a130073045
+set endpoint=https://nakkivrslanguageunderstanding.cognitiveservices.azure.com/
+set key=4e139adf4ae14248ace83b7ece3e84ae
 
 rem Get parameter and encode spaces for URL
 set input=%1

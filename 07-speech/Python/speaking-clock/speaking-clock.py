@@ -3,6 +3,8 @@ from datetime import datetime
 import os
 
 # Import namespaces
+import azure.cognitiveservices.speech as speech_sdk
+from playsound import playsound
 
 
 def main():
@@ -15,7 +17,8 @@ def main():
         cog_region = os.getenv('COG_SERVICE_REGION')
 
         # Configure speech service
-        
+        speech_config = speech_sdk.SpeechConfig(cog_key, cog_region)
+        print('Ready to use speech service in:', speech_config.region)
 
         # Get spoken input
         command = TranscribeCommand()
@@ -29,9 +32,27 @@ def TranscribeCommand():
     command = ''
 
     # Configure speech recognition
+    audioFile = 'time.wav'
+    playsound(audioFile)
+    audio_config = speech_sdk.AudioConfig(filename=audioFile)
+    speech_recognizer = speech_sdk.SpeechRecognizer(speech_config, audio_config)
+
+    # audio_config = speech_sdk.AudioConfig(use_default_microphone=True)
+    # speech_recognizer = speech_sdk.SpeechRecognizer(speech_config, audio_config)
+    # print('Speak now...')
 
 
     # Process speech input
+    speech = speech_recognizer.recognize_once_async().get()
+    if speech.reason == speech_sdk.ResultReason.RecognizedSpeech:
+        command = speech.text
+        print(command)
+    else:
+        print(speech.reason)
+        if speech.reason == speech_sdk.ResultReason.Canceled:
+            cancellation = speech.cancellation_details
+            print(cancellation.reason)
+            print(cancellation.error_details)
 
 
     # Return the command
@@ -44,9 +65,26 @@ def TellTime():
 
 
     # Configure speech synthesis
+    speech_config.speech_synthesis_voice_name = 'en-GB-George' # add this
+    speech_synthesizer = speech_sdk.SpeechSynthesizer(speech_config)
     
 
     # Synthesize spoken output
+    # speak = speech_synthesizer.speak_text_async(response_text).get()
+    # if speak.reason != speech_sdk.ResultReason.SynthesizingAudioCompleted:
+    #     print(speak.reason)
+
+    responseSsml = " \
+        <speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'> \
+            <voice name='en-GB-Susan'> \
+                {} \
+                <break strength='weak'/> \
+                Time to end this lab! \
+            </voice> \
+        </speak>".format(response_text)
+    speak = speech_synthesizer.speak_ssml_async(responseSsml).get()
+    if speak.reason != speech_sdk.ResultReason.SynthesizingAudioCompleted:
+        print(speak.reason)
 
 
     # Print the response
